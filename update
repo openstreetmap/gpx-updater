@@ -1,0 +1,89 @@
+#!/usr/bin/perl
+
+mkdir "tracks/pending";
+mkdir "tracks/current";
+
+while (1) {
+	$max = 0;
+	$now = time();
+
+	open(IN, "curl -q -m 120 http://www.openstreetmap.org/traces/rss |");
+	while (<IN>) {
+		if (/<link>(http:\/\/www.openstreetmap.org\/user\/(.*)\/traces\/(.*))<\/link>/) {
+			$track = $3;
+
+			if ($track > $max) {
+				$max = $track + 0;
+			}
+		}
+	}
+	close(IN);
+
+	for ($i = $max; $i > 1577234; $i--) {
+		last if time() >= $now + 120;
+
+		$dir = int($i / 10000);
+		next if -f "tracks/pending/$i.gpx";
+		next if -f "tracks/current/$dir/$i.gpx.gz";
+
+		print "$i\n";
+
+		$text = "";
+		open (IN, "curl -q -m 120 --compress http://www.openstreetmap.org/trace/$i/data |");
+		open(OUT, ">tracks/pending/$i.gpx");
+		while (<IN>) {
+			print OUT;
+		}
+		close(OUT);
+		close(IN);
+	}
+
+	@pending = <tracks/pending/*.gpx>;
+
+	if ($#pending >= 0) {
+		open(OUT, "| ./datamaps/encode -z20 -o shapes/pending");
+
+		for $f (@pending) {
+			open(IN, "./gpx-import/src/gpx-parse $f |");
+			while (<IN>) {
+				print OUT;
+			}
+			close(IN);
+		}
+		close(OUT);
+
+		system "./datamaps/merge -u -o shapes/current-new shapes/current shapes/pending";
+		if (($? >> 8) == 0) {
+			rename("shapes/current", "shapes/current-$$");
+			rename("shapes/current-new", "shapes/current");
+
+			for $f (@pending) {
+				$i = $f;
+				$i =~ s/.*\///;
+				$dir = int($i / 10000);
+
+				mkdir "tracks/current/$dir";
+
+				$f2 = $f;
+				$f2 =~ s/pending/current\/$dir/;
+
+				rename($f, $f2);
+				system "gzip -9 $f2";
+			}
+
+			for $f (<shapes/pending/*>) {
+				unlink $f;
+			}
+			rmdir "shapes/pending";
+
+			for $f (<shapes/current-$$/*>) {
+				unlink $f;
+			}
+			rmdir "shapes/current-$$";
+		} else {
+			print STDERR "error $?\n";
+		}
+	}
+
+	sleep(60);
+}
