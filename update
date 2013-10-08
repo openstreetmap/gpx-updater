@@ -41,7 +41,7 @@ while (1) {
 	@pending = <tracks/pending/*.gpx>;
 
 	if ($#pending >= 0) {
-		open(OUT, "| ./datamaps/encode -z20 -o shapes/pending");
+		open(OUT, "| ./datamaps/encode -z20 -o shapes/pending-$now");
 
 		for $f (@pending) {
 			open(IN, "./gpx-import/src/gpx-parse $f |");
@@ -52,10 +52,11 @@ while (1) {
 		}
 		close(OUT);
 
-		system "./datamaps/merge -u -o shapes/current-new shapes/current shapes/pending";
+		system "./datamaps/merge -u -o shapes/current-$now shapes/current shapes/pending-$now";
 		if (($? >> 8) == 0) {
-			rename("shapes/current", "shapes/current-$$");
-			rename("shapes/current-new", "shapes/current");
+			rename("shapes/current", "shapes/current-old-$now");
+			# XXX momentary race
+			rename("shapes/current-$now", "shapes/current");
 
 			for $f (@pending) {
 				$i = $f;
@@ -71,15 +72,15 @@ while (1) {
 				system "gzip -9 $f2";
 			}
 
-			for $f (<shapes/pending/*>) {
+			for $f (<shapes/pending-$now/*>) {
 				unlink $f;
 			}
-			rmdir "shapes/pending";
+			rmdir "shapes/pending-$now";
 
-			for $f (<shapes/current-$$/*>) {
+			for $f (<shapes/current-old-$now/*>) {
 				unlink $f;
 			}
-			rmdir "shapes/current-$$";
+			rmdir "shapes/current-old-$now";
 		} else {
 			print STDERR "error $?\n";
 		}
