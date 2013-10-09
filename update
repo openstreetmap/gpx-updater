@@ -33,6 +33,7 @@ sub merge {
 while (1) {
 	my $max = 0;
 	my $now = time();
+	my $did = 0;
 
 	open(IN, "curl -q -m 120 http://www.openstreetmap.org/traces/rss |");
 	while (<IN>) {
@@ -45,6 +46,8 @@ while (1) {
 		}
 	}
 	close(IN);
+
+	my $rsstime = time();
 
 	for (my $i = $max; $i > 1577234; $i--) {
 		last if time() >= $now + 120;
@@ -62,13 +65,18 @@ while (1) {
 		}
 		close(OUT);
 		close(IN);
+
+		$did = 1;
 	}
 
+	my $retrievetime = time();
+	my ($parsetime, $cachetime, $mergetime, $cleantime);
+
 	my @pending = <tracks/pending/*.gpx>;
-
 	if ($#pending >= 0) {
-		open(OUT, "| ./datamaps/encode -z20 -o shapes/pending-$now");
+		$did = 1;
 
+		open(OUT, "| ./datamaps/encode -z20 -o shapes/pending-$now");
 		for my $f (@pending) {
 			open(IN, "./gpx-import/src/gpx-parse $f |");
 			while (<IN>) {
@@ -77,6 +85,8 @@ while (1) {
 			close(IN);
 		}
 		close(OUT);
+
+		$parsetime = time();
 
 		open(IN, "./datamaps/enumerate -Z6 -z22 shapes/pending-$now |");
 		while (<IN>) {
@@ -87,7 +97,11 @@ while (1) {
 		}
 		close(IN);
 
+		$cachetime = time();
+
 		merge("shapes/pending-$now", "shapes/current");
+
+		$mergetime = time();
 
 		for my $f (@pending) {
 			my $i = $f;
@@ -103,6 +117,14 @@ while (1) {
 			rename($f, $f2);
 			system "gzip -9 $f2";
 		}
+
+		$cleantime = time();
+	}
+
+	if ($did) {
+		open(OUT, ">>$ENV{'HOME'}/time-stats");
+		print OUT "$now $rsstime $retrievetime $parsetime $cachetime $mergetime $cleantime\n";
+		close(OUT);
 	}
 
 	sleep(60);
