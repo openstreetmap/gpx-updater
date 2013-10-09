@@ -78,6 +78,15 @@ while (1) {
 		}
 		close(OUT);
 
+		open(IN, "./datamaps/enumerate -Z6 -z22 shapes/pending-$now |");
+		while (<IN>) {
+			my ($file, $z, $x, $y);
+			($file, $z, $x, $y) = split(/ /);
+			print "/tmp/tile/$z/$x/$y.png\n";
+			unlink("/tmp/tile/$z/$x/$y.png");
+		}
+		close(IN);
+
 		merge("shapes/pending-$now", "shapes/current");
 
 		for my $f (@pending) {
