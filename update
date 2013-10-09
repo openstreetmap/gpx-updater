@@ -32,6 +32,7 @@ sub merge {
 
 while (1) {
 	my $max = 0;
+	my $min = 0;
 	my $now = time();
 	my $did = 0;
 
@@ -57,6 +58,7 @@ while (1) {
 		next if -f "tracks/current/$dir/$i.gpx.gz";
 
 		print "$i\n";
+		$min = $i;
 
 		open (IN, "curl -q -m 120 --compress http://www.openstreetmap.org/trace/$i/data |");
 		open(OUT, ">tracks/pending/$i.gpx");
@@ -123,7 +125,13 @@ while (1) {
 
 	if ($did) {
 		open(OUT, ">>$ENV{'HOME'}/time-stats");
-		print OUT "$now $rsstime $retrievetime $parsetime $cachetime $mergetime $cleantime\n";
+		print OUT "$min to $max $now ";
+		printf OUT ("%d rss ", $rsstime - $now);
+		printf OUT ("%d retrieve ", $retrievetime - $rsstime);
+		printf OUT ("%d parse ", $parsetime - $retrievetime);
+		printf OUT ("%d cache ", $cachetime - $parsetime);
+		printf OUT ("%d merge ", $mergetime - $cachetime);
+		printf OUT ("%d clean\n", $cleantime - $mergetime);
 		close(OUT);
 	}
 
