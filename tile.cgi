@@ -34,7 +34,6 @@ $cachefile = "$cache/$var{'z'}/$var{'x'}/$var{'y'}.png";
 
 $cached = $memd->get($cachefile);
 if ($cached) {
-	print STDERR "serve $cachefile from cache\n";
 	print $cached;
 	exit 0;
 }
@@ -47,6 +46,5 @@ while (<IN>) {
 close(IN);
 
 $memd->set($cachefile, $data);
-print STDERR "add $cachefile to cache\n";
 print $data;
 exit 0;
