@@ -1,5 +1,11 @@
 #!/usr/bin/perl -w
 
+use Cache::Memcached;
+
+our $memd = new Cache::Memcached {
+        'servers' => [ "localhost:11211" ],
+};
+
 use strict;
 
 mkdir "tracks/pending";
@@ -90,12 +96,12 @@ while (1) {
 
 		$parsetime = time();
 
-		open(IN, "./datamaps/enumerate -Z6 -z22 shapes/pending-$now |");
+		open(IN, "./datamaps/enumerate -Z6 -z20 shapes/pending-$now |");
 		while (<IN>) {
 			my ($file, $z, $x, $y);
 			($file, $z, $x, $y) = split(/ /);
 			print "/tmp/tile/$z/$x/$y.png\n";
-			unlink("/tmp/tile/$z/$x/$y.png");
+			$memd->delete("/tmp/tile/$z/$x/$y.png");
 		}
 		close(IN);
 
