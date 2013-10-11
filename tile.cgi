@@ -2,10 +2,6 @@
 
 use Cache::Memcached;
 
-$memd = new Cache::Memcached {
-	'servers' => [ "localhost:11211" ],
-};
-
 @vars = split(/&/, $ENV{'QUERY_STRING'});
 
 for $v (@vars) {
@@ -32,6 +28,10 @@ print "Content-type: image/png\n\n";
 $cache = "/tmp/tile";
 $cachefile = "$cache/$var{'z'}/$var{'x'}/$var{'y'}.png";
 
+$memd = new Cache::Memcached {
+	'servers' => [ "localhost:11211" ],
+};
+
 $cached = $memd->get($cachefile);
 if ($cached) {
 	print $cached;
@@ -45,6 +45,8 @@ while (<IN>) {
 }
 close(IN);
 
-$memd->set($cachefile, $data);
+$| = 1;
 print $data;
+
+$memd->set($cachefile, $data);
 exit 0;
