@@ -11,6 +11,13 @@ use strict;
 mkdir "tracks/pending";
 mkdir "tracks/current";
 
+our $encodeopts = "-z20 -m8";
+
+unless (-d "shapes/current") {
+	open(OUT, "| ./datamaps/encode $encodeopts -o shapes/current");
+	close(OUT);
+}
+
 sub merge {
 	my ($pending, $current) = @_;
 	my $now = time();
@@ -84,7 +91,7 @@ while (1) {
 	if ($#pending >= 0) {
 		$did = 1;
 
-		open(OUT, "| ./datamaps/encode -z20 -o shapes/pending-$now");
+		open(OUT, "| ./datamaps/encode $encodeopts -o shapes/pending-$now");
 		for my $f (@pending) {
 			open(IN, "./gpx-import/src/gpx-parse $f |");
 			while (<IN>) {

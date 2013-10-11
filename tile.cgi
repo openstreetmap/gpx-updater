@@ -39,7 +39,7 @@ if ($cached) {
 }
 
 $data = "";
-open(IN, "/home/enf/datamaps/render -f /home/enf/shapes/current -t 0 -g -c FFAA00 /home/enf/shapes/main $var{'z'} $var{'x'} $var{'y'} | pngquant 64 |");
+open(IN, "/home/enf/datamaps/render -f /home/enf/shapes/lines-directional.dm -t 0 -g -C 256 /home/enf/shapes/current $var{'z'} $var{'x'} $var{'y'} | pngquant 64 |");
 while (<IN>) {
 	$data .= $_;
 }
