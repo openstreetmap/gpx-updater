@@ -8,6 +8,10 @@ our $memd = new Cache::Memcached {
 
 use strict;
 
+open(OUT, ">>$ENV{'HOME'}/time-stats");
+printf OUT ("Starting $$ at %d\n", time());
+close(OUT);
+
 mkdir "tracks/pending";
 mkdir "tracks/current";
 
@@ -144,7 +148,7 @@ while (1) {
 		printf OUT ("%d parse ", $parsetime - $retrievetime);
 		printf OUT ("%d cache ", $cachetime - $parsetime);
 		printf OUT ("%d merge ", $mergetime - $cachetime);
-		printf OUT ("%d clean\n", $cleantime - $mergetime);
+		printf OUT ("%d clean $$\n", $cleantime - $mergetime);
 		close(OUT);
 	}
 
