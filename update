@@ -97,7 +97,7 @@ while (1) {
 
 		open(OUT, "| ./datamaps/encode $encodeopts -o shapes/pending-$now");
 		for my $f (@pending) {
-			open(IN, "./gpx-import/src/gpx-parse $f |");
+			open(IN, "./import/src/gpx-parse $f |");
 			while (<IN>) {
 				print OUT;
 			}
