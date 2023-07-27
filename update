@@ -68,7 +68,7 @@ while (1) {
 	my $rsstime = time();
 
 	for (my $i = $max; $i > 1577234; $i--) {
-		last if time() >= $now + 120;
+		last if time() >= $now + 600;
 
 		my $dir = int($i / 10000);
 		next if -f "tracks/pending/$i.gpx";
