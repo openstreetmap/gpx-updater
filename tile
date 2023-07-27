@@ -39,7 +39,7 @@ if ($cached) {
 }
 
 $data = "";
-open(IN, "/srv/gps-tile.openstreetmap.org/datamaps/render -f /srv/gps-tile.openstreetmap.org/shapes/lines-directional.dm -t 0 -g -C 256 /srv/gps-tile.openstreetmap.org/shapes/current $var{'z'} $var{'x'} $var{'y'} | pngquant 64 |");
+open(IN, "/srv/gps-tile.openstreetmap.org/datamaps/render -f /srv/gps-tile.openstreetmap.org/shapes/lines-directional.dm -t 0 -g -C 256 /srv/gps-tile.openstreetmap.org/shapes/current $var{'z'} $var{'x'} $var{'y'} | pngquant --speed 10 64 |");
 while (<IN>) {
 	$data .= $_;
 }
